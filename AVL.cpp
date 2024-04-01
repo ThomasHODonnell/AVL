@@ -83,15 +83,14 @@ public:
         //fix x if its balance factor is violated
         recalc(x); // recalculate what's new height and bf of x are
         // Uncomment one of the below two statements
-        // if (true) return; // just BST         
     }
 
     void cases(Node* x) {
         //if (x == root)  return;
         // 4 cases of rotations // Fill them up
         if (x->bf == -2 && x->right->bf == -1)      rrotate(x);   // right rotation
-        else if (x->bf == -2 && x->left->bf == 1)  dlrotate(x);   // dogleg left
-        else if (x->bf == 2 && x->right->bf == -1)  drrotate(x);  // dogleg right
+        else if (x->bf == -2 && x->right->bf == 1)  dlrotate(x);   // dogleg left
+        else if (x->bf == 2 && x->left->bf == -1)  drrotate(x);  // dogleg right
         else if (x->bf == 2 && x->left->bf == 1)   lrotate(x);  // left rotation
     }
 
@@ -126,8 +125,8 @@ public:
                 x->parent->left=y;
                 y->parent = x->parent; 
                 x->parent = y;
-                x->left=y->right;
-                y->right = x;
+                x->right=y->left;
+                y->left = x;
             }
         }
         recalc(x);
@@ -155,7 +154,7 @@ public:
                 y->parent = x->parent; 
                 x->parent = y;
                 x->left=y->right;
-                y->left = x;
+                y->right = x;
             }
         }
         recalc(x);
@@ -169,7 +168,6 @@ public:
         x->right=z;
         z->parent=x;
         y->left=nullptr;
-        //recalc(y);
         rrotate(x);
     }
 
@@ -238,8 +236,10 @@ public:
             x->size = 1;
             x->bf = 0;
         }
-        if  ((x->bf == -2 || x->bf == 2)) cases(x);   
-        else if (x != root) recalc(x->parent);
+        // if  ((x->bf == -2 || x->bf == 2)) cases(x);   // comment out if BST
+        // else 
+        if (x != root) recalc(x->parent); 
+        //if 
     }
 
     void inorder(Node* p) {
@@ -276,12 +276,13 @@ public:
 
 int main() {
 
-    int n = 12;
+    int n = 1000000;
     auto startTime = chrono::high_resolution_clock::now();
     for (int i = 1; i <= n; i++) {
         // Uncomment one of the below two statements
         Node* p = new Node((i * 7637 + 571) % n + 1); // random inserts
         //Node* p = new Node(i); // sequential inserts
+        //cout << p->key<< endl;
         b.insert(p);
     }
 
@@ -293,8 +294,8 @@ int main() {
     cout << " Avg time per ins " << chrono::duration_cast<chrono::microseconds>(endTime - startTime).count() / 1000.0 / b.size() << " micsec" << endl;
     // Above 4 lines will be suppressed (commented out for Gradescope submission)
 
-    // Node* a = b.select(b.root, n / 2); // This; line is for Gradescope output
-    // cout << a->key << endl;
+    //Node* a = b.select(b.root, n / 2); // This; line is for Gradescope output
+    //cout << a->key << endl;
     // Choose n = 10000 with sequential insert mode 
     // with AVL tree
 
