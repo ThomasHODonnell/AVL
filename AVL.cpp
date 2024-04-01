@@ -67,28 +67,32 @@ public:
             if (y->left != nullptr) return insertnode(x,y->left);
             y -> left = x; 
             x -> parent = y; 
+            if (y->right==nullptr) y->height = y->height+1;
         }
         if (x->key > y->key) {
             // Fill this
             if (y->right != nullptr) return insertnode(x,y->right);
             y -> right = x; 
             x -> parent = y; 
+            if (y->left==nullptr) y->height = y->height+1;
         }
-        fixme(y);
+        fixme(x);
     }
 
     void fixme(Node* x) {
         //fix x if its balance factor is violated
-
         recalc(x); // recalculate what's new height and bf of x are
         // Uncomment one of the below two statements
-        // if (true) return; // just BST
-         if (x == root)  return;
+        // if (true) return; // just BST         
+    }
+
+    void cases(Node* x) {
+        //if (x == root)  return;
         // 4 cases of rotations // Fill them up
-        if (x->parent->bf == -2 && x->bf == -1)      rrotate(x->parent);   // right rotation
-        else if (x->parent->bf == -2 && x->bf == 1)  dlrotate(x->parent);  // dogleg left
-        else if (x->parent->bf == 2 && x->bf == -1)  drrotate(x->parent);  // dogleg right
-        else if (x->parent->bf == 2 && x->bf == 1)   lrotate(x->parent);   // left rotation
+        if (x->bf == -2 && x->right->bf == -1)      rrotate(x);   // right rotation
+        else if (x->bf == -2 && x->left->bf == 1)  dlrotate(x);   // dogleg left
+        else if (x->bf == 2 && x->right->bf == -1)  drrotate(x);  // dogleg right
+        else if (x->bf == 2 && x->left->bf == 1)   lrotate(x);  // left rotation
     }
 
     void Transplant(Node* x, Node* y) {
@@ -102,62 +106,58 @@ public:
     }
 
     void rrotate(Node* x) {
-        // Assumes x->left is not nullptr
         Node* y = x->right;
         if (x == root) {
             root = y;
+            x->right = y->left;
             root->left = x;
             x->parent = y;
             y->parent=nullptr;
-            x->right=nullptr;
         }
         else {
             if (x->parent->right==x) {
                 x->parent->right=y;
                 y->parent = x->parent; 
                 x->parent = y;
+                x->right=y->left;
                 y->left=x;
-                x->right=nullptr;
             }
             else {
                 x->parent->left=y;
                 y->parent = x->parent; 
                 x->parent = y;
+                x->left=y->right;
                 y->right = x;
-                x->left = nullptr;
             }
         }
-        //x->height = 1;
         recalc(x);
     }
 
      void lrotate(Node* x) {
-        // Assumes x->left is not nullptr
         Node* y = x->left;
         if (x == root) {
             root = y;
+            x->left = y->right;
             root->right = x;
             x->parent = y;
             y->parent=nullptr;
-            x->left=nullptr;
         }
         else {
             if (x->parent->left==x) {
                 x->parent->left=y;
                 y->parent = x->parent; 
                 x->parent = y;
+                x->left=y->right;
                 y->right=x;
-                x->left=nullptr;
             }
             else {
                 x->parent->right=y;
                 y->parent = x->parent; 
                 x->parent = y;
+                x->left=y->right;
                 y->left = x;
-                x->right = nullptr;
             }
         }
-        //x->height = 1;
         recalc(x);
     }
 
@@ -169,7 +169,7 @@ public:
         x->right=z;
         z->parent=x;
         y->left=nullptr;
-        recalc(y);
+        //recalc(y);
         rrotate(x);
     }
 
@@ -181,7 +181,7 @@ public:
         x->left=z;
         z->parent=x;
         y->right=nullptr;
-        recalc(y);
+        //recalc(y);
         lrotate(x);
     }
 
@@ -223,12 +223,12 @@ public:
             x->size = 1 + x->left->size + x->right->size;
             x->bf = x->left->height - x->right->height;
         }
-        else if (x->right != nullptr) { // ascending imbalance
+        else if (x->right != nullptr) { 
             x->height = 1 + x->right->height;
             x->size = 1 + x->right->size;
             x->bf = -x->right->height;
         }
-        else if (x->left != nullptr) { // decending imbalance
+        else if (x->left != nullptr) { 
             x->height = 1 + x->left->height;
             x->size = 1 + x->left->size;
             x->bf = x->left->height;
@@ -238,7 +238,8 @@ public:
             x->size = 1;
             x->bf = 0;
         }
-        if (x!=root) recalc(x->parent);
+        if  ((x->bf == -2 || x->bf == 2)) cases(x);   
+        else if (x != root) recalc(x->parent);
     }
 
     void inorder(Node* p) {
@@ -273,29 +274,27 @@ public:
 
     AVL b;
 
-
 int main() {
 
-
-    int n = 100;
+    int n = 12;
     auto startTime = chrono::high_resolution_clock::now();
     for (int i = 1; i <= n; i++) {
         // Uncomment one of the below two statements
-        // Node* p = new Node((i * 7637 + 571) % n + 1); // random inserts
-        Node* p = new Node(i); // sequential inserts
+        Node* p = new Node((i * 7637 + 571) % n + 1); // random inserts
+        //Node* p = new Node(i); // sequential inserts
         b.insert(p);
     }
 
     auto endTime = chrono::high_resolution_clock::now();
 
-    // cout << "n = " << b.size() << " h = " << b.height();
-    // cout << " h/log n = " << b.height() / (log(b.size()) / log(2)) << endl;
-    // cout << "Total Time = " << chrono::duration_cast<chrono::microseconds>(endTime - startTime).count() / 1000.0 << " micsec";
-    // cout << " Avg time per ins " << chrono::duration_cast<chrono::microseconds>(endTime - startTime).count() / 1000.0 / b.size() << " micsec" << endl;
+    cout << "n = " << b.size() << " h = " << b.height();
+    cout << " h/log n = " << b.height() / (log(b.size()) / log(2)) << endl;
+    cout << "Total Time = " << chrono::duration_cast<chrono::microseconds>(endTime - startTime).count() / 1000.0 << " micsec";
+    cout << " Avg time per ins " << chrono::duration_cast<chrono::microseconds>(endTime - startTime).count() / 1000.0 / b.size() << " micsec" << endl;
     // Above 4 lines will be suppressed (commented out for Gradescope submission)
 
-    Node* a = b.select(b.root, n / 2); // This; line is for Gradescope output
-    cout << a->key << endl;
+    // Node* a = b.select(b.root, n / 2); // This; line is for Gradescope output
+    // cout << a->key << endl;
     // Choose n = 10000 with sequential insert mode 
     // with AVL tree
 
